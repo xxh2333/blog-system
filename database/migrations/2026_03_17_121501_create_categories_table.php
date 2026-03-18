@@ -9,12 +9,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('notes', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');//关联用户
+            $table->string('title'); // 标题
+            $table->text('content'); // 内容
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // 关联用户
+            $table->foreignId('category_id')->constrained()->onDelete('cascade'); // 关联分类
+            $table->boolean('is_public')->default(false); // 公开状态，默认私有
             $table->timestamps();
         });
     }
