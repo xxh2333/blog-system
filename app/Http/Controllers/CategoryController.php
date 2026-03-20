@@ -81,7 +81,7 @@ class CategoryController extends Controller
         ])->firstOrFail();
         //删除分类（会级联删除关联的笔记）
         $category->delete();
-        
+
         return response()->json([
             'code' => 200,
             'message' => '分类删除成功'
