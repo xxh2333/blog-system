@@ -31,6 +31,11 @@ class NoteController extends Controller
         //关键：自动关联当前登录用户ID
         $note = new Note();
         $note->title = $validated['title'];
+        $note->content = $validated['content'];
+        $note->category_id = $validated['category_id'];
+        $note->user_id = auth()->id();
+        $note->is_public = $validated['is_public']?? false;
+        $note->save();
         return response()->json([
             'code' => 201,
             'data' => $note,
@@ -40,8 +45,12 @@ class NoteController extends Controller
     //查看单篇笔记
     public function show($id)
     {
-        $note = Note::where('user_id',auth()->id())->findOrFail($id);
-        return response()->json($note);
+        $note = Note::where('user_id',auth()->id())->with('category')->findOrFail($id);
+        return response()->json([
+            'code' => 200,
+            'data' => $note,
+            'message' => '笔记详情获取成功'
+        ]);
     }
     //更新笔记
     public function update(Request $request, $id)
@@ -54,14 +63,21 @@ class NoteController extends Controller
             'is_public' => 'boolean|nullable'
         ]);
         $note->update($validated);
-        return response()->json($note);
+        return response()->json([
+            'code' => 201,
+            'data' => $note,
+            'message' => '笔记更新成功'
+        ]);
     }
     //删除笔记
     public function destroy($id)
     {
         $note = Note::where('user_id',auth()->id())->findOrFail($id);
         $note->delete();
-        return response()->json(['message' => '笔记删除成功']);
+        return response()->json([
+            'code' => 200,
+            'message' => '笔记删除成功'
+        ]);
     }
     //特殊接口：切换公开/私有状态（PATCH接口）
     public function switchStatus($id)
@@ -71,8 +87,12 @@ class NoteController extends Controller
         $note->is_public = !$note->is_public;
         $note->save();
         return response()->json([
+            'code' => 201,
             'message' => '状态切换成功',
-            'is_public' => $note->is_public
+            'data' => [
+                'is_public' => $note->is_public,
+                'status_text' => $note->is_public ? '公开' : '私有'
+            ]
         ]);
     }
 }
