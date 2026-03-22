@@ -16,13 +16,13 @@ Route::middleware('auth:sanctum')->group(function(){
 
 
 // 广场笔记查询（公开接口）
-Route::get('notes/public', [NoteController::class, 'publicNotes']);
+Route::get('notes/public', [NoteQueryController::class, 'publicNotes']);
 
 // 高级搜索（可根据需要决定是否公开）
-Route::get('notes/advanced-search', [NoteController::class, 'advancedSearch']);
+Route::get('notes/advanced-search', [NoteQueryController::class, 'advancedSearch']);
 
 // 需要认证的路由
 Route::middleware('auth:api')->group(function () {
     // 个人笔记查询（需要登录）
-    Route::get('my-notes', [NoteController::class, 'myNotes']);
+    Route::get('my-notes', [NoteQueryController::class, 'myNotes']);
 });
