@@ -9,6 +9,19 @@ class Note extends Model
 {
     use HasFactory;
     //属于一个用户
+
+    protected $fillable = [
+        'title',
+        'content',
+        'user_id',
+        'category_id',
+        'is_public'
+    ];
+    protected $casts = [
+        'is_public' => 'boolean',
+    ];
+
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -16,5 +29,18 @@ class Note extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+
+    // 范围查询：公开笔记
+    public function scopePublic($query)
+    {
+        return $query->where('is_public', true);
+    }
+
+    // 范围查询：私有笔记
+    public function scopePrivate($query)
+    {
+        return $query->where('is_public', false);
     }
 }
