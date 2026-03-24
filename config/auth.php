@@ -40,6 +40,12 @@ return [
             'driver' => 'jwt',
             'provider' => 'users',
         ],
+   //api守卫
+        'api' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
+            'hash' => false,
+        ],
     ],
 
     /*
