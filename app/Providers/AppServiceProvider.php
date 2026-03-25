@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // 🔥 删掉了不存在的 encodingOptions 方法
         Schema::defaultStringLength(191);
     }
 }

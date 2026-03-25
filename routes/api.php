@@ -11,6 +11,8 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::get('/auth/me', [AuthController::class, 'me']);
 Route::post('/auth/logout', [AuthController::class, 'logout']);
 
+// 新增：查看已注册账号
+Route::get('/auth/registered-users', [AuthController::class, 'getRegisteredUsers']);
 
 
 // 广场笔记查询（公开接口）
