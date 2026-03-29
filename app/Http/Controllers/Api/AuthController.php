@@ -30,7 +30,7 @@ class AuthController extends Controller
     }
     // ==========================================================================
 
-    // 发送验证码 → 发邮件 → 存缓存（你原本的逻辑）
+    // 发送验证码 → 发邮件 → 存缓存
     public function sendCode(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -74,7 +74,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'password' => 'required|string|min:6|confirmed',
-            'code' => 'required|numeric|digits:6'
+            'code' => 'required|numeric|digits:6'//需要写明验证码的位数
         ]);
 
         if ($validator->fails()) {
