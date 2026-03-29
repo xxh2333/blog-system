@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -73,7 +74,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'password' => 'required|string|min:6|confirmed',
-            'code' => 'required|numeric|digits:6'
+            'code' => 'required|numeric|digits'
         ]);
 
         if ($validator->fails()) {
@@ -138,7 +139,6 @@ class AuthController extends Controller
         ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
-    // 登录（你原本结构，只修复读取用户）
     public function login(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -157,10 +157,13 @@ class AuthController extends Controller
         $email = trim($request->input('email'));
         $password = $request->input('password');
 
-        // ====================== 【修改】读取用户 ======================
         foreach (self::getUsers() as $user) {
             if ($user['email'] === $email) {
                 if (Hash::check($password, $user['password'])) {
+
+                    $token = Str::random(60);
+                    cache()->put('login_token:' . $token, $user, 86400);
+
                     return response()->json([
                         'code' => 200,
                         'msg' => '登录成功',
@@ -169,7 +172,9 @@ class AuthController extends Controller
                                 'id' => $user['id'],
                                 'name' => $user['name'],
                                 'email' => $user['email']
-                            ]
+                            ],
+                            'token' => $token,
+                            'token_type' => 'bearer'
                         ]
                     ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
                 } else {
@@ -189,21 +194,62 @@ class AuthController extends Controller
         ], 400, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
-    public function logout(): \Illuminate\Http\JsonResponse
+    // ====================== ✅ 修改：登出使 Token 失效 ======================
+    public function logout(Request $request): \Illuminate\Http\JsonResponse
     {
-        return response()->json(['code' => 200, 'msg' => '退出成功'], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $auth = $request->header('Authorization');
+        if ($auth && str_starts_with($auth, 'Bearer ')) {
+            $token = substr($auth, 7);
+            cache()->forget('login_token:' . $token);
+        }
+
+        return response()->json([
+            'code' => 200,
+            'msg' => '退出成功'
+        ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
-    public function me(): \Illuminate\Http\JsonResponse
+    // ====================== ✅ 修改：获取当前登录用户信息 ======================
+    public function me(Request $request): \Illuminate\Http\JsonResponse
     {
-        return response()->json(['code' => 200, 'msg' => '获取用户信息成功'], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $auth = $request->header('Authorization');
+
+        if (!$auth || !str_starts_with($auth, 'Bearer ')) {
+            return response()->json([
+                'code' => 401,
+                'msg' => '请先登录',
+                'data' => []
+            ], 401, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+
+        $token = substr($auth, 7);
+        $user = cache()->get('login_token:' . $token);
+
+        if (!$user) {
+            return response()->json([
+                'code' => 401,
+                'msg' => '登录已过期，请重新登录',
+                'data' => []
+            ], 401, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+
+        return response()->json([
+            'code' => 200,
+            'msg' => '获取用户信息成功',
+            'data' => [
+                'user' => [
+                    'id' => $user['id'],
+                    'name' => $user['name'],
+                    'email' => $user['email']
+                ]
+            ]
+        ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
     // 查看已注册账号（只修复读取用户）
     public function getRegisteredUsers(): \Illuminate\Http\JsonResponse
     {
         $safeUsers = [];
-        // ====================== 【修改】读取用户 ======================
         foreach (self::getUsers() as $user) {
             $safeUsers[] = [
                 'id' => $user['id'],
