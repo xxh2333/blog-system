@@ -1,8 +1,8 @@
 <IfModule mod_rewrite.c>
-    #å°†æ‰€æœ‰ä¸å­˜åœ¨çš„æ–‡ä»¶/ç›®å½•è¯·æ±‚éƒ½è½¬å‘ç»™index.phpè®©laravelå¤„ç†è·¯ç”±
+    #½«ËùÓĞ²»´æÔÚµÄÎÄ¼ş/Ä¿Â¼ÇëÇó¶¼×ª·¢¸øindex.phpÈÃlaravel´¦ÀíÂ·ÓÉ
     RewriteEngine On
 
-    # å¤„ç†å‰ç«¯è¯·æ±‚
+    # ´¦ÀíÇ°¶ËÇëÇó
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
