@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Auth;
+
 
 class CategoryController extends Controller
 {
@@ -62,7 +61,7 @@ class CategoryController extends Controller
         ])->firstOrFail();
         //参数验证
         $validated = $request->validate([
-            'name' => 'required|unique:categories|max:255',
+            'name' => 'required|unique:categories,name,$id|max:255',
         ]);
         //更新分类名称
         $category->name = $validated['name'];
@@ -79,9 +78,9 @@ class CategoryController extends Controller
             'id' => $id,
             'user_id' => auth()->id()
         ])->firstOrFail();
-        //删除分类（会级联删除关联的笔记）
+        //删除分类
         $category->delete();
-        
+
         return response()->json([
             'code' => 200,
             'message' => '分类删除成功'
