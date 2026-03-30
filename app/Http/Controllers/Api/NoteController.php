@@ -89,10 +89,10 @@ class NoteController extends Controller
         ]);
 
         return response()->json([
-            'code' => 201,
+            'code' => 200,
             'message' => '笔记创建成功',
             'data' => $note
-        ], 201); // 201状态码：创建资源成功
+        ], 200); // 201状态码：创建资源成功
     }
 
     // 接口4：获取单条笔记详情（CRUD-查）

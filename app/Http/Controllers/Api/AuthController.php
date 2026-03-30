@@ -126,7 +126,7 @@ class AuthController extends Controller
         }
 
         cache()->forget("verify_code:$email");
-        
+
         $users = self::getUsers();
         foreach ($users as $user) {
             if ($user['email'] === $email) { // ✅ 改回数组访问
