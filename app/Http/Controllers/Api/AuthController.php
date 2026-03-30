@@ -8,29 +8,38 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Models\User; // 仅新增：引入User模型
 
 class AuthController extends Controller
 {
-    // ====================== 【唯一修改】用缓存永久存储用户 ======================
+    // ====================== 【唯一修改】用数据库存储用户（替换原缓存逻辑） ======================
     private static function getUsers() {
-        return cache()->remember('test_users', 86400, function () {
-            return [
-                [
-                    'id' => 1,
-                    'name' => 'test_user',
-                    'email' => '2633681826@qq.com',
-                    'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
-                ]
+        // 从数据库查询用户，转为数组（兼容原逻辑格式）
+        $dbUsers = User::select('id', 'name', 'email', 'password')->get()->toArray();
+
+        // 如果数据库无数据，初始化测试用户（保持原默认逻辑）
+        if (empty($dbUsers)) {
+            $testUser = [
+                'id' => 1,
+                'name' => 'test_user',
+                'email' => '2633681826@qq.com',
+                'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
             ];
-        });
+            // 写入数据库（仅首次初始化）
+            User::create($testUser);
+            return [$testUser];
+        }
+
+        return $dbUsers;
     }
 
     private static function saveUsers($users) {
-        cache()->put('test_users', $users, 86400);
+        // 数据库无需批量保存，注册逻辑已改为直接创建用户，保留方法避免报错
+        return true;
     }
     // ==========================================================================
 
-    // 发送验证码 → 发邮件 → 存缓存
+    // 发送验证码 → 发邮件 → 存缓存（完全保留原逻辑）
     public function sendCode(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -67,7 +76,7 @@ class AuthController extends Controller
         ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
-    // 注册：必须用邮箱收到的验证码才能通过（你原本的逻辑）
+    // 注册：必须用邮箱收到的验证码才能通过（仅替换保存用户逻辑）
     public function register(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -108,7 +117,7 @@ class AuthController extends Controller
 
         cache()->forget("verify_code:$email");
 
-        // ====================== 【修改】读取用户 ======================
+        // ====================== 【修改】读取用户（底层换数据库，逻辑不变） ======================
         $users = self::getUsers();
         foreach ($users as $user) {
             if ($user['email'] === $email) {
@@ -120,22 +129,26 @@ class AuthController extends Controller
             }
         }
 
-        $newUserId = count($users) + 1;
-        $newUser = [
-            'id' => $newUserId,
+        // ====================== 【核心修改】保存用户到数据库（替换原缓存追加逻辑） ======================
+        $newUser = User::create([
             'name' => trim($request->input('name')),
             'email' => $email,
             'password' => Hash::make($request->input('password'))
-        ];
+        ]);
 
-        // ====================== 【修改】保存用户 ======================
-        $users[] = $newUser;
-        self::saveUsers($users);
+        // 保持原返回格式（兼容前端）
+        $newUserArr = [
+            'id' => $newUser->id,
+            'name' => $newUser->name,
+            'email' => $newUser->email,
+            'password' => $newUser->password
+        ];
+        // ==========================================================================
 
         return response()->json([
             'code' => 200,
             'msg' => '注册成功！',
-            'data' => ['user' => $newUser]
+            'data' => ['user' => $newUserArr]
         ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
@@ -194,7 +207,7 @@ class AuthController extends Controller
         ], 400, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
-    // ====================== ✅ 修改：登出使 Token 失效 ======================
+    // ====================== ✅ 修改：登出使 Token 失效（完全保留原逻辑） ======================
     public function logout(Request $request): \Illuminate\Http\JsonResponse
     {
         $auth = $request->header('Authorization');
@@ -209,7 +222,7 @@ class AuthController extends Controller
         ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
-    // ====================== ✅ 修改：获取当前登录用户信息 ======================
+    // ====================== ✅ 修改：获取当前登录用户信息（完全保留原逻辑） ======================
     public function me(Request $request): \Illuminate\Http\JsonResponse
     {
         $auth = $request->header('Authorization');
@@ -246,7 +259,7 @@ class AuthController extends Controller
         ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
-    // 查看已注册账号（只修复读取用户）
+    // 查看已注册账号（只修复读取用户，逻辑不变）
     public function getRegisteredUsers(): \Illuminate\Http\JsonResponse
     {
         $safeUsers = [];
