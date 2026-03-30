@@ -10,12 +10,14 @@ class Note extends Model
     use HasFactory;
     //属于一个用户
 
+    // 批量赋值字段
     protected $fillable = [
         'title',
         'content',
         'user_id',
         'category_id',
-        'is_public'
+        'content',
+        'is_public',
     ];
     protected $casts = [
         'is_public' => 'boolean',

@@ -9,16 +9,14 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('notes', function (Blueprint $table) {
-            $table->id();
-            $table->string('title'); // 标题
-            $table->text('content'); // 内容
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // 关联用户
-            $table->foreignId('category_id')->constrained()->onDelete('cascade'); // 关联分类
-            $table->boolean('is_public')->default(false); // 公开状态，默认私有
-            $table->timestamps();
+        // 创建 categories 表（分类表）
+        Schema::create('categories', function (Blueprint $table) {
+            $table->id(); // 主键ID
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // 关联用户表
+            $table->string('name'); // 分类名称
+            $table->timestamps(); // 创建时间/更新时间
         });
     }
 
@@ -27,6 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // 删除 categories 表
         Schema::dropIfExists('categories');
     }
 };

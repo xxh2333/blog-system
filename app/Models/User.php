@@ -6,6 +6,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory; // 补充 Laravel 必备的工厂 trait
 use Tymon\JWTAuth\Contracts\JWTSubject; // 引入 JWT 核心接口
+use App\Models\Category;
+use App\Models\Note;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -40,7 +42,6 @@ class User extends Authenticatable implements JWTSubject
      * 隐藏敏感字段（返回给前端时自动隐藏）
      */
     protected $hidden = [
-        'password',
         'remember_token', // 补充 Laravel 默认的记住令牌字段
     ];
 
@@ -60,4 +61,9 @@ public function categories()
 {
     return $this->hasMany(Category::class);
 }
+public function notes()
+{
+    return $this->hasMany(Note::class);
+}
+
 }
