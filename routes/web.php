@@ -1,11 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
 Route::get('/', function () {
     return view('welcome');
 });
-
 //测试邮箱配置是否生效
 use Illuminate\Support\Facades\Mail;
 
