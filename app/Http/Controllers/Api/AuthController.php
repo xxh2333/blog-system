@@ -14,10 +14,10 @@ class AuthController extends Controller
 {
     // ====================== 【唯一修改】用数据库存储用户（替换原缓存逻辑） ======================
     private static function getUsers() {
-        // 从数据库查询用户，转为数组（兼容原逻辑格式）
+        // 1. 先查询数据库
         $dbUsers = User::select('id', 'name', 'email', 'password')->get()->toArray();
 
-        // 如果数据库无数据，初始化测试用户（保持原默认逻辑）
+        // 2. 如果数据库为空，初始化测试用户
         if (empty($dbUsers)) {
             $testUser = [
                 'id' => 1,
@@ -25,9 +25,12 @@ class AuthController extends Controller
                 'email' => '2633681826@qq.com',
                 'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
             ];
-            // 写入数据库（仅首次初始化）
+            // 写入数据库
             User::create($testUser);
-            return [$testUser];
+
+            // 3. 【关键修复】写入后，重新从数据库查回来！
+            // 这样保证返回的数据结构永远是一致的（数据库类型）
+            return User::select('id', 'name', 'email', 'password')->get()->toArray();
         }
 
         return $dbUsers;
@@ -120,7 +123,7 @@ class AuthController extends Controller
         // ====================== 【修改】读取用户（底层换数据库，逻辑不变） ======================
         $users = self::getUsers();
         foreach ($users as $user) {
-            if ($user['email'] === $email) {
+            if ($user['email'] === $email) { // ✅ 改回数组访问
                 return response()->json([
                     'code' => 400,
                     'msg' => '该邮箱已注册',
@@ -171,8 +174,8 @@ class AuthController extends Controller
         $password = $request->input('password');
 
         foreach (self::getUsers() as $user) {
-            if ($user['email'] === $email) {
-                if (Hash::check($password, $user['password'])) {
+            if ($user['email'] === $email) { // ✅ 改回数组访问
+                if (Hash::check($password, $user['password'])) { // ✅ 改回数组访问
 
                     $token = Str::random(60);
                     cache()->put('login_token:' . $token, $user, 86400);
@@ -182,9 +185,9 @@ class AuthController extends Controller
                         'msg' => '登录成功',
                         'data' => [
                             'user' => [
-                                'id' => $user['id'],
-                                'name' => $user['name'],
-                                'email' => $user['email']
+                                'id' => $user['id'],      // ✅ 改回数组访问
+                                'name' => $user['name'],  // ✅ 改回数组访问
+                                'email' => $user['email']// ✅ 改回数组访问
                             ],
                             'token' => $token,
                             'token_type' => 'bearer'
@@ -251,9 +254,9 @@ class AuthController extends Controller
             'msg' => '获取用户信息成功',
             'data' => [
                 'user' => [
-                    'id' => $user['id'],
-                    'name' => $user['name'],
-                    'email' => $user['email']
+                    'id' => $user['id'],      // ✅ 改回数组访问
+                    'name' => $user['name'],  // ✅ 改回数组访问
+                    'email' => $user['email']// ✅ 改回数组访问
                 ]
             ]
         ], 200, [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
@@ -265,9 +268,9 @@ class AuthController extends Controller
         $safeUsers = [];
         foreach (self::getUsers() as $user) {
             $safeUsers[] = [
-                'id' => $user['id'],
-                'name' => $user['name'],
-                'email' => $user['email']
+                'id' => $user['id'],      // ✅ 改回数组访问
+                'name' => $user['name'],  // ✅ 改回数组访问
+                'email' => $user['email']// ✅ 改回数组访问
             ];
         }
 
