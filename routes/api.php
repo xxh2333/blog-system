@@ -15,14 +15,19 @@ Route::post('/auth/logout', [AuthController::class, 'logout']);
 Route::get('/auth/registered-users', [AuthController::class, 'getRegisteredUsers']);
 
 
-// 广场笔记查询（公开接口）
-Route::get('/notes/public', [NoteQueryController::class, 'publicNotes']);
+use Illuminate\Http\Request;
 
-// 高级搜索（可根据需要决定是否公开）
-Route::get('notes/advanced-search', [NoteQueryController::class, 'advancedSearch']);
+// 引入NoteController控制器
+use App\Http\Controllers\Api\NoteController;
 
-// 需要认证的路由
-Route::middleware('auth:api')->group(function () {
-    // 个人笔记查询（需要登录）
-    Route::get('/my-notes', [NoteQueryController::class, 'myNotes']);
-});
+// 原有路由（用户/分类）保留，此处添加笔记路由↓
+
+// 笔记模块核心路由
+// 1. 广场公开笔记：GET /api/notes/public
+Route::get('notes/public', [NoteController::class, 'publicNotes']);
+// 2. 个人笔记：GET /api/my-notes
+Route::get('my-notes', [NoteController::class, 'myNotes']);
+// 3. 笔记CRUD基础路由：自动映射store/show/update/destroy（无需手动写4条路由）
+Route::apiResource('notes', NoteController::class);
+// 4. 切换笔记状态：PATCH /api/notes/{id}/status
+Route::patch('notes/{note}/status', [NoteController::class, 'toggleStatus']);
