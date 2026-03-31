@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Category;
+use App\Models\User;
 
 class Note extends Model
 {
@@ -19,6 +21,9 @@ class Note extends Model
         'content',
         'is_public',
     ];
+
+
+    // 关联分类模型
     protected $casts = [
         'is_public' => 'boolean',
     ];
@@ -33,6 +38,12 @@ class Note extends Model
         return $this->belongsTo(Category::class);
     }
 
+    // 关联用户模型
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
 
     // 范围查询：公开笔记
     public function scopePublic($query)

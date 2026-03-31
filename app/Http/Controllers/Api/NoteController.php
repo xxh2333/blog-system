@@ -9,14 +9,7 @@ use Illuminate\Support\Facades\Auth; // 引入Auth门面，获取当前登录用
 
 class NoteController extends Controller
 {
-    // 【构造方法】给控制器所有方法添加auth:api中间件
-    // 除了登录/注册，所有笔记接口都需要登录验证，此处统一添加更高效
-    public function __construct()
-    {
-        $this->middleware('auth:api');
-    }
-
-    // 接口1：获取广场公开笔记 + 模糊搜索 + 分页
+    // 接口 1：获取广场公开笔记 + 模糊搜索 + 分页
     // 请求方式：GET
     // 请求地址：/api/notes/public
     // URL参数：?title=关键词&content=关键词（可选，支持模糊搜索）
@@ -89,10 +82,10 @@ class NoteController extends Controller
         ]);
 
         return response()->json([
-            'code' => 201,
+            'code' => 200,
             'message' => '笔记创建成功',
             'data' => $note
-        ], 201); // 201状态码：创建资源成功
+        ], 200); // 201状态码：创建资源成功
     }
 
     // 接口4：获取单条笔记详情（CRUD-查）

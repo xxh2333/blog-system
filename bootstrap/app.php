@@ -36,5 +36,10 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // 处理认证异常，返回 JSON 而不是重定向
+        $exceptions->respond(function ($e) {
+            if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                return response()->json(['message' => '未授权访问'], 401);
+            }
+        });
     })->create();
