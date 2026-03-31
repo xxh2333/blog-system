@@ -54,12 +54,8 @@ class User extends Authenticatable implements JWTSubject
             'password' => 'hashed', // Laravel 10+ 推荐的密码哈希转换
         ];
     }
-<<<<<<< branch-a
-=======
-
 public function categories()
 {
     return $this->hasMany(Category::class);
 }
->>>>>>> main
 }
