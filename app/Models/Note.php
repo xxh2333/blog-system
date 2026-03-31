@@ -10,17 +10,29 @@ use App\Models\User;
 class Note extends Model
 {
     use HasFactory;
+    //属于一个用户
 
     // 批量赋值字段
     protected $fillable = [
+        'title',
+        'content',
         'user_id',
         'category_id',
-        'title',
         'content',
         'is_public',
     ];
 
+
     // 关联分类模型
+    protected $casts = [
+        'is_public' => 'boolean',
+    ];
+
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -30,5 +42,18 @@ class Note extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+}
+
+    // 范围查询：公开笔记
+    public function scopePublic($query)
+    {
+        return $query->where('is_public', true);
+    }
+
+    // 范围查询：私有笔记
+    public function scopePrivate($query)
+    {
+        return $query->where('is_public', false);
     }
 }

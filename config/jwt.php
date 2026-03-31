@@ -1,5 +1,6 @@
 <?php
 
+
 /*
  * This file is part of jwt-auth.
  *
@@ -11,6 +12,7 @@
 
 return [
 
+return [
     /*
     |--------------------------------------------------------------------------
     | JWT Authentication Secret
@@ -20,8 +22,10 @@ return [
     | your tokens. A helper command is provided for this:
     | `php artisan jwt:secret`
     |
+
     | Note: This will be used for Symmetric algorithms only (HMAC),
     | since RSA and ECDSA use a private/public key combo (See below).
+    | Note: This will only be used for the Symmetric algorithm (HMAC).
     |
     */
 
@@ -33,6 +37,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | The algorithm you are using, will determine whether your tokens are
+
     | signed with a random string (defined in `JWT_SECRET`) or using the
     | following public & private keys.
     |
@@ -41,6 +46,16 @@ return [
     |
     | Asymmetric Algorithms:
     | RS256, RS384 & RS512 / ES256, ES384 & ES512 will use the keys below.
+    | signed with a random string (used in Symmetric algorithms like HS256) or
+    | using a public/private key pair (used in Asymmetric algorithms like RS256).
+    |
+    | Symmetric Algorithms:
+    | HS256, HS384, HS512
+    |
+    | Asymmetric Algorithms:
+    | RS256, RS384, RS512,
+    | ES256, ES384, ES512,
+    | PS256, PS384, PS512
     |
     */
 
@@ -83,6 +98,7 @@ return [
 
         'passphrase' => env('JWT_PASSPHRASE'),
 
+
     ],
 
     /*
@@ -95,6 +111,7 @@ return [
     |
     | You can also set this to null, to yield a never expiring token.
     | Some people may want this behaviour for e.g. a mobile app.
+
     | This is not particularly recommended, so make sure you have appropriate
     | systems in place to revoke the token if necessary.
     | Notice: If you set this to null you should remove 'exp' element from 'required_claims' list.
@@ -102,6 +119,12 @@ return [
     */
 
     'ttl' => (int) env('JWT_TTL', 60),
+    | This is not yet recommended, but if you still want to use it,
+    | you should set your own refresh policy.
+    |
+    */
+
+    'ttl' => env('JWT_TTL', 60),
 
     /*
     |--------------------------------------------------------------------------
@@ -115,12 +138,19 @@ return [
     |
     | You can also set this to null, to yield an infinite refresh time.
     | Some may want this instead of never expiring tokens for e.g. a mobile app.
+
     | This is not particularly recommended, so make sure you have appropriate
     | systems in place to revoke the token if necessary.
     |
     */
 
     'refresh_ttl' => (int) env('JWT_REFRESH_TTL', 20160),
+    | This is not yet recommended, but if you still want to use it,
+    | you should set your own refresh policy.
+    |
+    */
+
+    'refresh_ttl' => env('JWT_REFRESH_TTL', 20160),
 
     /*
     |--------------------------------------------------------------------------
@@ -129,9 +159,15 @@ return [
     |
     | Specify the hashing algorithm that will be used to sign the token.
     |
+
     */
 
     'algo' => env('JWT_ALGO', Tymon\JWTAuth\Providers\JWT\Provider::ALGO_HS256),
+    | See here: https://github.com/PHPOpenSourceSaver/jwt-auth/wiki/Algorithms
+    |
+    */
+
+    'algo' => env('JWT_ALGO', 'HS256'),
 
     /*
     |--------------------------------------------------------------------------
@@ -160,9 +196,13 @@ return [
     |
     | Specify the claim keys to be persisted when refreshing a token.
     | `sub` and `iat` will automatically be persisted, in
+
     | addition to the these claims.
     |
     | Note: If a claim does not exist then it will be ignored.
+    | addition to the claims listed here.
+    |
+    | Note: If a claim is not listed here, then it will be lost on refresh.
     |
     */
 
@@ -173,6 +213,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+
     | Lock Subject
     |--------------------------------------------------------------------------
     |
@@ -185,6 +226,13 @@ return [
     | Under specific circumstances, you may want to disable this behaviour
     | e.g. if you only have one authentication model, then you would save
     | a little on token size.
+    | Lock Subject to a single user
+    |--------------------------------------------------------------------------
+    |
+    | This will prevent a token from being used to authenticate as a different
+    | user if the token is stolen. This is not the default behaviour because
+    | it makes stateless auth less stateless, but you might want this for your
+    | own app.
     |
     */
 
@@ -195,6 +243,7 @@ return [
     | Leeway
     |--------------------------------------------------------------------------
     |
+
     | This property gives the jwt timestamp claims some "leeway".
     | Meaning that if you have any unavoidable slight clock skew on
     | any of your servers then this will afford you some level of cushioning.
@@ -202,6 +251,8 @@ return [
     | This applies to the claims `iat`, `nbf` and `exp`.
     |
     | Specify in seconds - only if you know you need it.
+    | This gives you some leeway to account for clock skew between the server
+    | that issued the token and the server that's verifying the token.
     |
     */
 
@@ -251,6 +302,15 @@ return [
     */
 
     'decrypt_cookies' => false,
+    | Show blacklisted token in exception
+    |--------------------------------------------------------------------------
+    |
+    | This specifies whether or not to show blacklisted tokens in the
+    | TokenBlacklistedException message.
+    |
+    */
+
+    'show_blacklisted_exception' => env('JWT_SHOW_BLACKLIST_EXCEPTION', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -272,7 +332,9 @@ return [
         |
         */
 
+
         'jwt' => Tymon\JWTAuth\Providers\JWT\Lcobucci::class,
+        'jwt' => PHPOpenSourceSaver\JWTAuth\Providers\JWT\Lcobucci::class,
 
         /*
         |--------------------------------------------------------------------------
@@ -284,6 +346,11 @@ return [
         */
 
         'auth' => Tymon\JWTAuth\Providers\Auth\Illuminate::class,
+        | Specify the provider that is used to authenticate users in your app.
+        |
+        */
+
+        'auth' => PHPOpenSourceSaver\JWTAuth\Providers\Auth\Illuminate::class,
 
         /*
         |--------------------------------------------------------------------------
@@ -298,4 +365,7 @@ return [
 
     ],
 
+];
+        'storage' => PHPOpenSourceSaver\JWTAuth\Providers\Storage\Illuminate::class,
+    ],
 ];

@@ -1,5 +1,11 @@
 <?php
 
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+// 【重要】注释掉你错误写入的模型代码（保留迁移文件原有结构）
+/*
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,28 +15,60 @@ class Note extends Model
 {
     use HasFactory;
 
-    // 【核心】批量赋值字段：允许通过create/update批量写入的字段
-    // 必须包含业务中需要手动赋值的字段，排除主键/时间戳（Laravel自动维护）
     protected $fillable = [
-        'user_id',   // 关联用户ID
-        'category_id', // 关联分类ID
-        'title',     // 笔记标题
-        'content',   // 笔记内容
-        'is_public'  // 公开状态（0私有/1公共）
+        'user_id',
+        'category_id',
+        'title',
+        'content',
+        'is_public'
     ];
 
-    // 【核心】模型关联：笔记属于一个用户（多对一）
-    // 关联users表，外键为user_id，关联模型为User::class
     public function user()
     {
-        // onDelete('cascade')：用户删除时，关联的笔记也自动删除（和迁移文件外键一致）
         return $this->belongsTo(User::class)->onDelete('cascade');
     }
 
-    // 【核心】模型关联：笔记属于一个分类（多对一）
-    // 关联categories表，外键为category_id，关联模型为Category::class
     public function category()
     {
         return $this->belongsTo(Category::class)->onDelete('cascade');
     }
 }
+*/
+
+return new class extends Migration
+{
+    /**
+     * 执行迁移：创建notes表
+     */
+    public function up():void
+    {
+        Schema::create('notes', function (Blueprint $table) {
+            $table->id()->comment('笔记ID，主键'); // 主键id（自增）
+
+            // 关联users表，外键user_id，用户删除时笔记也删除
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->comment('所属用户ID，关联users表，用户删除级联删除');
+
+            // 关联categories表，外键category_id，分类删除时笔记也删除
+            $table->foreignId('category_id')->constrained()->onDelete('cascade');
+            $table->comment('所属分类ID，关联categories表，分类删除级联删除');
+
+            $table->string('title')->comment('笔记标题'); // 笔记标题（字符串，非空）
+            $table->text('content')->comment('笔记内容'); // 笔记内容（长文本）
+            $table->tinyInteger('is_public')->default(0)->comment('是否公开：0=私有 1=公开'); // 公开状态：0私有/1公共，默认私有
+
+            $table->timestamps(); // 自动维护created_at/updated_at时间戳
+
+            // 表注释
+            $table->comment('笔记信息表');
+        });
+    }
+
+    /**
+     * 回滚迁移：删除notes表
+     */
+    public function down():void
+    {
+        Schema::dropIfExists('notes');
+    }
+};
