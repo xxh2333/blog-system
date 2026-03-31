@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory; // 补充 Laravel 必备的工厂 trait
-use Tymon\JWTAuth\Contracts\JWTSubject; // 引入 JWT 核心接口
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject; // 引入 JWT 核心接口
 use App\Models\Category;
 use App\Models\Note;
 

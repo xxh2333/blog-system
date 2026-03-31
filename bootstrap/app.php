@@ -18,6 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/auth/register',
             'api/auth/login',
         ]);
+
+        // 添加 JWT 中间件
+        $middleware->alias([
+            'jwt.auth' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
+            'jwt.check' => \Tymon\JWTAuth\Http\Middleware\Check::class,
+            'jwt.refresh' => \Tymon\JWTAuth\Http\Middleware\RefreshToken::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

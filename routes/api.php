@@ -14,6 +14,11 @@ Route::post('/auth/logout', [AuthController::class, 'logout']);
 // 新增：查看已注册账号
 Route::get('/auth/registered-users', [AuthController::class, 'getRegisteredUsers']);
 
+Route::middleware('auth:api')->group(function () {
+    Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+});
+
 
 use Illuminate\Http\Request;
 
