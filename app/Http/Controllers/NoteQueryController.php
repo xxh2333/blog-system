@@ -41,7 +41,7 @@ class NoteQueryController extends Controller
 
         // 返回统一格式的分页数据
         return response()->json([
-            'data' => $notes->items(),
+            'data' => $notes->items() ,
             'meta' => [
                 'current_page' => $notes->currentPage(),
                 'last_page' => $notes->lastPage(),

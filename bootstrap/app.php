@@ -25,6 +25,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'jwt.check' => \Tymon\JWTAuth\Http\Middleware\Check::class,
             'jwt.refresh' => \Tymon\JWTAuth\Http\Middleware\RefreshToken::class,
         ]);
+        // 添加这个配置 - 处理未认证用户的重定向
+        $middleware->redirectGuestsTo(function ( $request) {
+            // API 请求返回 null（会触发 401 响应）
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return null;
+            }
+            // Web 请求重定向到 login 路由
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
